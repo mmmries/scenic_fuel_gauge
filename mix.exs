@@ -12,7 +12,14 @@ defmodule ScenicFuelGauge.MixProject do
       elixir: "~> 1.9",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      description: @description,
+      package: [
+        description: @description,
+        licenses: ["MIT"],
+        links: %{
+          github: "https://github.com/mmmries/scenic_fuel_gauge"
+        },
+        maintainers: ["Michael Ries"]
+      ],
       docs: [
         main: "Scenic.FuelGauge"
       ]
