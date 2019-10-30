@@ -1,4 +1,4 @@
-![Sample Gauge](gauge.png)
+![Sample Gauge](doc/gauge.png)
 
 # ScenicFuelGauge
 
