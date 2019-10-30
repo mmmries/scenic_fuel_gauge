@@ -1,6 +1,18 @@
 defmodule Scenic.FuelGauge do
   import Scenic.Primitives
 
+  @moduledoc """
+  A stateless function for drawing a fuel gauge in a Scenic.Scene
+
+  Example:
+      Scenic.Graph.build(font: :roboto, font_size: @text_size)
+      |> Scenic.FuelGauge.draw(%{fuel: 0.7}, [scale: {3.0, 3.0}, translate: {80, 40}])
+
+  That will draw something like this:
+
+  ![Example Gauge](gauge.png)
+  """
+
   @doc """
   Draw a fuel gauge on your scene graph
 
