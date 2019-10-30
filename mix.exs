@@ -14,7 +14,7 @@ defmodule ScenicFuelGauge.MixProject do
       deps: deps(),
       description: @description,
       docs: [
-        main: "Scenic.FuelGauge",
+        main: "Scenic.FuelGauge"
       ]
     ]
   end
