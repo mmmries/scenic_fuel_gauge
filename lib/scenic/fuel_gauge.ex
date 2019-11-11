@@ -1,27 +1,49 @@
 defmodule Scenic.FuelGauge do
+  use Scenic.Component, has_children: false
+  alias Scenic.Graph
   import Scenic.Primitives
 
   @moduledoc """
-  A stateless function for drawing a fuel gauge in a Scenic.Scene
+  A Scenic.Component that draws a fuel gauge
 
   Example:
       Scenic.Graph.build(font: :roboto, font_size: @text_size)
-      |> Scenic.FuelGauge.draw(%{fuel: 0.7}, [scale: {3.0, 3.0}, translate: {80, 40}])
+      |> Scenic.FuelGauge.Components.fuel_gauge(:fuel_gauge, [scale: {3.0, 3.0}, translate: {80, 40}])
 
   That will draw something like this:
 
   ![Example Gauge](gauge.png)
   """
 
-  @doc """
-  Draw a fuel gauge on your scene graph
+  @doc false
+  def verify(name) when is_atom(name), do: {:ok, name}
+  def verify(_), do: :invalid_data
 
-  This function takes in a graph and draws a fuel gauge on that graph.
-  The second argument is map where you can provide a `fuel` float between `0.0 .. 1.0`.
-  This third argument is a standard set of scenic options that you can pass to a group, this is a convenience for doing scaling, rotating, etc
-  """
-  @spec draw(Scenic.Graph.t(), %{fuel: float()}, keyword()) :: Scenic.Graph.t()
-  def draw(graph, data, opts \\ []) do
+  @doc false
+  def init(name, opts) do
+    true = Process.register(self(), name)
+    state = %{
+      data: %{
+        fuel: 0.0,
+      },
+      opts: opts
+    }
+    graph = build_graph(state)
+    {:ok, state, push: graph}
+  end
+
+  def handle_info({:fuel, level}, state) do
+    state = put_in(state, [:data, :fuel], level)
+    graph = build_graph(state)
+    {:noreply, state, push: graph}
+  end
+
+  defp build_graph(state) do
+    styles = state[:opts][:styles]
+    Graph.build(styles: styles) |> draw(state[:data], state[:opts])
+  end
+
+  defp draw(graph, data, opts) do
     group(graph, &build_group(&1, data), opts)
   end
 
