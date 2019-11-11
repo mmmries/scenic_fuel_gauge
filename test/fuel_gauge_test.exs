@@ -8,7 +8,7 @@ defmodule Scenic.FuelGaugeTest do
   }
 
   test "init" do
-    {:ok, _, push: _} = FuelGauge.init(:test_name, styles: %{})
+    {:ok, _, push: _} = FuelGauge.init(%{name: :test_name}, styles: %{})
   end
 
   test "handle_info {:fuel, level}" do

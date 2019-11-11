@@ -16,15 +16,16 @@ defmodule Scenic.FuelGauge do
   """
 
   @doc false
-  def verify(name) when is_atom(name), do: {:ok, name}
+  def verify(%{name: name} = data) when is_atom(name), do: {:ok, data}
   def verify(_), do: :invalid_data
 
   @doc false
-  def init(name, opts) do
+  def init(%{name: name} = data, opts) do
     true = Process.register(self(), name)
+    fuel = Map.get(data, :fuel, 0.0)
     state = %{
       data: %{
-        fuel: 0.0,
+        fuel: fuel,
       },
       opts: opts
     }
