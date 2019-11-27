@@ -1,27 +1,58 @@
 defmodule Scenic.FuelGauge do
+  use Scenic.Component, has_children: false
+  alias Scenic.Graph
   import Scenic.Primitives
 
   @moduledoc """
-  A stateless function for drawing a fuel gauge in a Scenic.Scene
+  A Scenic.Component that draws a fuel gauge
 
   Example:
       Scenic.Graph.build(font: :roboto, font_size: @text_size)
-      |> Scenic.FuelGauge.draw(%{fuel: 0.7}, [scale: {3.0, 3.0}, translate: {80, 40}])
+      |> Scenic.FuelGauge.Components.fuel_gauge(%{gauge_sensor_id: :battery_level}, [scale: {3.0, 3.0}, translate: {80, 40}])
 
   That will draw something like this:
 
   ![Example Gauge](gauge.png)
   """
 
-  @doc """
-  Draw a fuel gauge on your scene graph
+  @doc false
+  def verify(%{gauge_sensor_id: sensor_id} = data) when is_atom(sensor_id), do: {:ok, data}
+  def verify(_), do: :invalid_data
 
-  This function takes in a graph and draws a fuel gauge on that graph.
-  The second argument is map where you can provide a `fuel` float between `0.0 .. 1.0`.
-  This third argument is a standard set of scenic options that you can pass to a group, this is a convenience for doing scaling, rotating, etc
-  """
-  @spec draw(Scenic.Graph.t(), %{fuel: float()}, keyword()) :: Scenic.Graph.t()
-  def draw(graph, data, opts \\ []) do
+  @doc false
+  def init(%{gauge_sensor_id: gauge_sensor_id} = data, opts) do
+    :ok = Scenic.Sensor.subscribe(gauge_sensor_id)
+    fuel = Map.get(data, :fuel, 0.0)
+    state = %{
+      data: %{
+        fuel: fuel,
+      },
+      opts: opts
+    }
+    graph = build_graph(state)
+    {:ok, state, push: graph}
+  end
+
+  def handle_info({:sensor, :registered, _metadata}, state) do
+    {:noreply, state}
+  end
+
+  def handle_info({:sensor, :unregistered, _sensor_id}, state) do
+    {:noreply, state}
+  end
+
+  def handle_info({:sensor, :data, {_sensor_id, level, _timestamp}}, state) do
+    state = put_in(state, [:data, :fuel], level)
+    graph = build_graph(state)
+    {:noreply, state, push: graph}
+  end
+
+  defp build_graph(state) do
+    styles = state[:opts][:styles]
+    Graph.build(styles: styles) |> draw(state[:data], state[:opts])
+  end
+
+  defp draw(graph, data, opts) do
     group(graph, &build_group(&1, data), opts)
   end
 
