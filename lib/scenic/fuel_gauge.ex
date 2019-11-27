@@ -8,7 +8,7 @@ defmodule Scenic.FuelGauge do
 
   Example:
       Scenic.Graph.build(font: :roboto, font_size: @text_size)
-      |> Scenic.FuelGauge.Components.fuel_gauge(:fuel_gauge, [scale: {3.0, 3.0}, translate: {80, 40}])
+      |> Scenic.FuelGauge.Components.fuel_gauge(%{gauge_sensor_id: :battery_level}, [scale: {3.0, 3.0}, translate: {80, 40}])
 
   That will draw something like this:
 
@@ -16,12 +16,12 @@ defmodule Scenic.FuelGauge do
   """
 
   @doc false
-  def verify(%{name: name} = data) when is_atom(name), do: {:ok, data}
+  def verify(%{gauge_sensor_id: sensor_id} = data) when is_atom(sensor_id), do: {:ok, data}
   def verify(_), do: :invalid_data
 
   @doc false
-  def init(%{name: name} = data, opts) do
-    true = Process.register(self(), name)
+  def init(%{gauge_sensor_id: gauge_sensor_id} = data, opts) do
+    :ok = Scenic.Sensor.subscribe(gauge_sensor_id)
     fuel = Map.get(data, :fuel, 0.0)
     state = %{
       data: %{
@@ -33,7 +33,15 @@ defmodule Scenic.FuelGauge do
     {:ok, state, push: graph}
   end
 
-  def handle_info({:fuel, level}, state) do
+  def handle_info({:sensor, :registered, _metadata}, state) do
+    {:noreply, state}
+  end
+
+  def handle_info({:sensor, :unregistered, _sensor_id}, state) do
+    {:noreply, state}
+  end
+
+  def handle_info({:sensor, :data, {_sensor_id, level, _timestamp}}, state) do
     state = put_in(state, [:data, :fuel], level)
     graph = build_graph(state)
     {:noreply, state, push: graph}

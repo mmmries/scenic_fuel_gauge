@@ -10,15 +10,15 @@ defmodule Scenic.FuelGauge.Components do
   @doc """
   Add a fuel gauge to a graph.
 
-  Make sure to pass in data as a map with a `:name` key.
-  The component will register itself with that name so you can later send fuel level updates.
-  You can also pass the `:fuel` key with a value betwen `0.0..1.0` to indicate the fuel leve.
-  To update this simply send a message to the registered name like `{:fuel, 0.75}`.
+  Make sure to pass in data as a map with a `:gauge_sensor_id` key.
+  The component will subscribe to sensor updates for the given `gauge_sensor_id`.
+  You can also pass the `:fuel` key with a value betwen `0.0..1.0` to indicate the initial fuel level.
+  To update this simply call `:ok = Scenic.Sensor.publish(:gauge_sensor_id, 0.75)`.
 
   ### Examples
 
       graph
-      |> Scenic.FuelGauge.Components.fuel_gauge(%{name: :fuel_gauge, fuel: 0.5}, translate: {20, 20} )
+      |> Scenic.FuelGauge.Components.fuel_gauge(%{gauge_sensor_id: :battery_level, fuel: 0.5}, translate: {20, 20} )
   """
   def fuel_gauge(graph, data, options \\ [])
 
