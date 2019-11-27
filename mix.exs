@@ -35,6 +35,7 @@ defmodule ScenicFuelGauge.MixProject do
   defp deps do
     [
       {:scenic, "~> 0.10"},
+      {:scenic_sensor, "~> 0.7"},
       {:ex_doc, ">= 0.0.0", only: [:dev, :docs]}
     ]
   end
